@@ -30,7 +30,7 @@ const RegisteredView = ({ _dbUser }) => {
     let isrec = await withdrawTotalInvestment("");
     if (true) {
       client
-        .patch(_dbUser["address"]) // Document ID to patch
+        .patch(_dbUser["_id"]) // Document ID to patch
         .set({ isClaimed: true })
         .commit() // Perform the patch and return a promise
         .then((updatedRecord) => {

@@ -1,7 +1,9 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import client from "../sanity";
 import { useMoralis, useWeb3Contract, useMoralisWeb3Api } from "react-moralis";
 import { toast } from "react-toastify";
 import UTILS from "../utils";
+import _getUserDetails from "../api";
 const InvestorContext = createContext();
 
 export const InvestorProvider = ({ children }) => {
@@ -11,13 +13,24 @@ export const InvestorProvider = ({ children }) => {
   const [connectedAddress, setConnectedAddress] = useState(null);
   const [refactoredAddress, setRefactoredAddress] = useState(null);
   const [claimedProfile, setClaimedProfile] = useState([0, 0]);
+  const [dbInit, setDbInit] = useState("unloaded");
   useEffect(() => {
     if (isAuthenticated) {
+      setUpDB().then();
       setConnectedAddress(user.get("ethAddress"));
       setRefactoredAddress(refactorAddress(user.get("ethAddress")));
       getTotalClaimedTokens();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, dbInit]);
+  const setUpDB = async () => {
+    if (isAuthenticated && user.get("ethAddress")) {
+      var db = await _getUserDetails(user.get("ethAddress"));
+      var mpg_init = localStorage.getItem("mpg_init");
+      if (db == null && mpg_init == "unloaded") {
+        await initialiseDBUser(user.get("ethAddress"));
+      }
+    }
+  };
   const connect = async () => {
     try {
       await authenticate();
@@ -25,9 +38,37 @@ export const InvestorProvider = ({ children }) => {
       toast.error(error);
     }
   };
+  const initialiseDBUser = async (userAddress) => {
+    //record on claim
+    var mpg_init = localStorage.getItem("mpg_init");
+    try {
+      if (mpg_init == "unloaded" && typeof userAddress == "string") {
+        const doc = {
+          _type: "mpg_claim",
+          address: userAddress,
+          balance: "0",
+          seed_claimed: "0",
+          ido_claimed: "0",
+          claimable: "0",
+          isClaimed: false,
+          is_seed_claimed: false,
+          is_ido_claimed: false,
+          is_registered: false,
+        };
+        await client.create(doc);
+        localStorage.setItem("mpg_init", "loaded");
+        console.log(localStorage.getItem("mpg_init"));
+        setDbInit(localStorage.getItem("mpg_init"));
+        return true;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const disconnect = async () => {
     try {
       await logout();
+      localStorage.clear();
     } catch (error) {
       console.log(error);
     }

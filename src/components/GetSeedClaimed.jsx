@@ -11,12 +11,13 @@ const GetSeedClaimed = ({ address }) => {
   const [claimedTokensBlkc, setClaimedTokens] = useState(null);
   const [isRegistered, setisRegistered] = useState(false);
   const [seedClaimed, setseedClaimed] = useState("0");
-
+  const [user_id, setUserId] = useState(null);
   useEffect(() => {
     initialiseState().then();
   }, [seedClaimed]);
   const initialiseState = async () => {
     let _dbUser = await getDBInvestor(address);
+    setUserId(_dbUser["_id"]);
     setseedClaimed(_dbUser["seed_claimed"]);
     setisRegistered(_dbUser["is_seed_claimed"]);
   };
@@ -26,7 +27,7 @@ const GetSeedClaimed = ({ address }) => {
   };
   const recordClaimedTokens = () => {
     client
-      .patch(address) // Document ID to patch
+      .patch(user_id) // Document ID to patch
       .set({ seed_claimed: claimedTokensBlkc.toString(), is_seed_claimed: true })
       .commit() // Perform the patch and return a promise
       .then((updatedRecord) => {

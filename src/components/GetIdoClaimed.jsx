@@ -11,12 +11,14 @@ const GetIdoClaimed = ({ address }) => {
   const [claimedTokens, setClaimedTokens] = useState(null);
   const [isRegistered, setisRegistered] = useState(false);
   const [idoClaimed, setidoClaimed] = useState("0");
+  const [user_id, setUserId] = useState(null);
 
   useEffect(() => {
     initialiseState().then();
-  }, [idoClaimed]);
+  }, [idoClaimed, isRegistered]);
   const initialiseState = async () => {
     let _dbUser = await getDBInvestor(address);
+    setUserId(_dbUser["_id"]);
     setidoClaimed(_dbUser["ido_claimed"]);
     setisRegistered(_dbUser["is_ido_claimed"]);
   };
@@ -26,7 +28,7 @@ const GetIdoClaimed = ({ address }) => {
   };
   const recordClaimedTokens = () => {
     client
-      .patch(address) // Document ID to patch
+      .patch(user_id) // Document ID to patch
       .set({ ido_claimed: claimedTokens.toString(), is_ido_claimed: true })
       .commit() // Perform the patch and return a promise
       .then((updatedRecord) => {

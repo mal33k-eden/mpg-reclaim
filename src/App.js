@@ -22,13 +22,10 @@ function App() {
     } else {
       setdbuser(null);
     }
-    console.log(completedWizard);
   }, [isAuthenticated, refreshState, completedWizard]);
 
   const initialiseApp = async (_address) => {
-    console.log(_address);
     let _dbUser = await getDBInvestor(_address);
-    console.log(_dbUser);
     setdbuser(_dbUser);
   };
   const refresher = () => {
@@ -44,7 +41,7 @@ function App() {
         </Button>
       )}
       {dbuser ? (
-        dbuser["isRegistered"] ? (
+        dbuser["is_registered"] ? (
           <RegisteredView _dbUser={dbuser} />
         ) : (
           <UnregisteredView _dbUser={dbuser} />

@@ -13,16 +13,18 @@ const RegisterClaimed = ({ address }) => {
   const [calClaimableTokens, setCalClaimableTokens] = useState(null);
   const [isRegistered, setisRegistered] = useState(false);
   const [balance, setBalance] = useState("0");
-
+  const [user_id, setUserId] = useState(null);
   useEffect(() => {
-    initialiseState().then();
+    console.log(isRegistered);
+    console.log(address);
   }, [isRegistered]);
   const initialiseState = async () => {
     let _dbUser = await getDBInvestor(address);
     let bal = await fetchTokenBalances(address);
+    setUserId(_dbUser["_id"]);
     setCurrBalance(bal);
     setBalance(_dbUser["balance"]);
-    setisRegistered(_dbUser["isRegistered"]);
+    setisRegistered(_dbUser["is_registered"]);
     setCalClaimableTokens(parseInt(bal) - parseInt(_dbUser["ido_claimed"] + parseInt(_dbUser["seed_claimed"])));
   };
 
@@ -31,11 +33,11 @@ const RegisterClaimed = ({ address }) => {
     let isrec = await getRecorded();
     if (isrec) {
       client
-        .patch(address) // Document ID to patch
-        .set({ balance: currBalance, isRegistered: true, claimable: calClaimableTokens.toString() })
+        .patch(user_id) // Document ID to patch
+        .set({ balance: currBalance, is_registered: true, claimable: calClaimableTokens.toString() })
         .commit() // Perform the patch and return a promise
         .then((updatedRecord) => {
-          toast.success("Claimable tokens updated.");
+          toast.success("Claimable tokens updated. Refresh your browser if you you have not been redirected after 15 seconds");
           setBalance(updatedRecord["balance"]);
           setisRegistered(updatedRecord["isRegistered"]);
           setClaimableTokens(updatedRecord["claimable"]);
@@ -57,7 +59,7 @@ const RegisterClaimed = ({ address }) => {
             <>
               {currBalance && <Card.Text>Current Balance: MPG {currBalance}</Card.Text>}
               {calClaimableTokens && <Card.Text>Claimable Tokens: MPG {calClaimableTokens}</Card.Text>}
-              <Button variant="primary" onClick={currBalance ? recordClaimedTokens : null}>
+              <Button variant="primary" onClick={currBalance ? recordClaimedTokens : initialiseState}>
                 {currBalance ? "Confirm Records" : "Get Records"}
               </Button>
             </>
