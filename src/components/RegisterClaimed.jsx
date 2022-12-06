@@ -21,11 +21,16 @@ const RegisterClaimed = ({ address }) => {
   const initialiseState = async () => {
     let _dbUser = await getDBInvestor(address);
     let bal = await fetchTokenBalances(address);
-    setUserId(_dbUser["_id"]);
-    setCurrBalance(bal);
-    setBalance(_dbUser["balance"]);
-    setisRegistered(_dbUser["is_registered"]);
-    setCalClaimableTokens(parseInt(bal) - parseInt(_dbUser["ido_claimed"] + parseInt(_dbUser["seed_claimed"])));
+
+    if (_dbUser["is_ido_claimed"] && _dbUser["is_seed_claimed"]) {
+      setCurrBalance(bal);
+      setUserId(_dbUser["_id"]);
+      setBalance(_dbUser["balance"]);
+      setisRegistered(_dbUser["is_registered"]);
+      setCalClaimableTokens(parseInt(bal) - parseInt(_dbUser["ido_claimed"] + parseInt(_dbUser["seed_claimed"])));
+    } else {
+      toast.error("You need to confirm your IDO & SEED tokens before you continue");
+    }
   };
 
   const recordClaimedTokens = async () => {
