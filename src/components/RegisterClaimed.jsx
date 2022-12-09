@@ -27,7 +27,7 @@ const RegisterClaimed = ({ address }) => {
       setUserId(_dbUser["_id"]);
       setBalance(_dbUser["balance"]);
       setisRegistered(_dbUser["is_registered"]);
-      setCalClaimableTokens(parseInt(bal) - parseInt(_dbUser["ido_claimed"] + parseInt(_dbUser["seed_claimed"])));
+      setCalClaimableTokens(parseInt(bal) - (parseInt(_dbUser["ido_claimed"]) + parseInt(_dbUser["seed_claimed"])));
     } else {
       toast.error("You need to confirm your IDO & SEED tokens before you continue");
     }
